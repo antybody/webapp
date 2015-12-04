@@ -57,19 +57,19 @@ public class wxservlet extends HttpServlet{
 	 *@exception 
 	 *@param
 	 * 
-	 * <p>����������Ч��֤������</p>
+	 * <p>微信接入认证</p>
 	 */
 	private void connect(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException{
 		log.info("RemoteAddr: "+ request.getRemoteAddr());
 		log.info("QueryString: "+ request.getQueryString());
 		 if(!accessing(request, response)){
-			 log.info("����������ʧ��.......");
+			 log.info("服务接入失败.......");
 			 return ;
 		 }
 		String echostr=getEchostr();
 		if(echostr!=null && !"".equals(echostr)){
-				log.info("������������Ч..........");
-				response.getWriter().print(echostr);//����໥��֤
+				log.info("服务接入成果..........");
+				response.getWriter().print(echostr);//
 		}
 	}
 	/**
@@ -79,7 +79,7 @@ public class wxservlet extends HttpServlet{
 	 * @exception ServletException, IOException
 	 * @param
 	 *
-	 *<p>��������΢�Ź���ƽ̨����֤</p> 
+	 *<p>认证反馈比对</p> 
 	 */
 	private boolean accessing(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException {
 		String signature = request.getParameter("signature");
@@ -108,7 +108,7 @@ public class wxservlet extends HttpServlet{
 		String pwd = Encrypt(sb.toString());
 		 
 	    log.info("signature:"+signature+",timestamp:"+timestamp+",nonce:"+nonce+",pwd:"+pwd+",echostr:"+echostr);
-	    log.info("JAVA���ܺ�����룺"+pwd+",������"+ArrTmp[0]+","+ArrTmp[1]+","+ArrTmp[2]);
+	    log.info("JAVA加密后"+pwd+",排序后"+ArrTmp[0]+","+ArrTmp[1]+","+ArrTmp[2]);
 	    if(trim(pwd).equals(trim(signature))){
 	    	this.echostr =echostr;
 	    	return true;
@@ -155,14 +155,14 @@ public class wxservlet extends HttpServlet{
 	 *@exception ServletException, IOException
 	 *@param
 	 * 
-	 * <p>XML��װ���</p>
+	 * <p>XML获取</p>
 	 */
 	 private void message(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException{
 		 
 		    response.setCharacterEncoding("UTF-8");
 			request.setCharacterEncoding("UTF-8");
 			
-			/* ��ȡ���յ���xml ��Ϣ*/
+			/* xml*/
 			StringBuffer sb = new StringBuffer();
 			InputStream is = request.getInputStream();
 			InputStreamReader isr = new InputStreamReader(is,"UTF-8");
@@ -190,7 +190,7 @@ public class wxservlet extends HttpServlet{
 	 * @exception ServletException, IOException
 	 * @param
 	 * 
-	 * <p>ҵ��ת�����</p>
+	 * <p></p>
 	 * 
 	 */
 	  private void  manageMessage(String requestStr,HttpServletRequest request,HttpServletResponse response)throws ServletException,IOException{
@@ -202,20 +202,21 @@ public class wxservlet extends HttpServlet{
 				 String[] requestStrs = requestStr.split("=");
 				// ReceiveXmlEntity xmlEntity = new ReceiveXmlProcess().getMsgEntity(requestStrs[1]);
 				 XMLSerializer xmlSerializer=new XMLSerializer();
-				 JSONObject jsonObject =(JSONObject) xmlSerializer.read(requestStr);
-				 String event =jsonObject.getString("Event");
+				 String xml = java.net.URLDecoder.decode(requestStrs[1],"UTF-8");
+				 JSONObject jsonObject =(JSONObject) xmlSerializer.read(xml);
+				 //String event =jsonObject.getString("Event");
 				 String msgtype =jsonObject.getString("MsgType");
-				 if("CLICK".equals(event) && "event".equals(msgtype)){ //�˵�click�¼�
-					 String eventkey =jsonObject.getString("EventKey");
-					 if("hytd_001".equals(eventkey)){ // hytd_001 ���Ǻ����ŶӰ�ť�ı�־ֵ
-						 jsonObject.put("Content", "��ӭʹ�ú����ŶӲ˵�click��ť.");
-					 }
+				 if("text".equals(msgtype)){ //
+					 //String eventkey =jsonObject.getString("EventKey");
+					 //if("hytd_001".equals(eventkey)){ // hytd_001 
+						 jsonObject.put("Content", "是你在测试吗？");
+					 //}
 					
 				 }
-				 responseStr =creatRevertText(jsonObject);//����XML
+				 responseStr =creatRevertText(jsonObject);//XML
 				 log.info("responseStr:"+responseStr);
 				 OutputStream os =response.getOutputStream();
-				 os.write(responseStr.getBytes("UTF-8"));
+				 os.write(responseStr.getBytes());
 			}   catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -229,7 +230,7 @@ public class wxservlet extends HttpServlet{
 	    	revert.append("<CreateTime>"+jsonObject.get("CreateTime")+"</CreateTime>");
 	    	revert.append("<MsgType><![CDATA[text]]></MsgType>");
 	    	revert.append("<Content><![CDATA["+jsonObject.get("Content")+"]]></Content>");
-	    	revert.append("<FuncFlag>0</FuncFlag>");
+	    	//revert.append("<FuncFlag>0</FuncFlag>");
 	    	revert.append("</xml>");
 	    	return revert.toString();
 	    }
