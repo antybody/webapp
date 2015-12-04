@@ -16,6 +16,18 @@
     <servlet-name>wechart</servlet-name>
     <url-pattern>/servlet/wechart</url-pattern>
   </servlet-mapping>
+  
+    <servlet>
+    <description>微信接口</description>
+    <display-name>微信接口</display-name>
+    <servlet-name>wxservlet</servlet-name>
+    <servlet-class>servlet.wxservlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>wxservlet</servlet-name>
+    <url-pattern>/servlet/wxservlet</url-pattern>
+  </servlet-mapping>
 	
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
