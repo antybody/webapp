@@ -219,6 +219,8 @@ public class wxservlet extends HttpServlet{
 				 //jsonObject.put("Content", "您在输入什么呢？");
 				 if("text".equals(msgtype)){ //
 				     jsonObject.put("Content", "您在输入："+jsonObject.getString("Content"));
+				 }else{
+					 jsonObject.put("Content", "您在输入什么呢？");
 				 }
 				 
 				 if("event".equals(msgtype)){
@@ -237,8 +239,6 @@ public class wxservlet extends HttpServlet{
 						     "纬度："+jsonObject.getString("Location_Y")+
 						     "中文："+jsonObject.getString("Label");
 					 jsonObject.put("Content", jscontent);	
-				 }else{
-					 jsonObject.put("Content", "您在输入什么呢？");
 				 }
 				 responseStr =creatRevertText(jsonObject);//XML
 				 log.info("responseStr:"+responseStr);
