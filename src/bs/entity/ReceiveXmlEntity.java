@@ -1,6 +1,6 @@
 package bs.entity;
 /**
- * 接收到的微信xml实体类
+ * 寰俊浜嬩欢鐨勭被
  * @author pamchen-1
  *
  */

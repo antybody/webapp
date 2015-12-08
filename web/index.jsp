@@ -18,6 +18,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<!--
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	-->
+	<script type="text/javascript" src="lib/jquery-1.8.2.js"></script>
+	<script type="text/javascript" src="bs/index.js"></script>
+	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	
   </head>
   
   <body>
@@ -25,6 +29,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     <form action="/webapp/servlet/wxservlet" name=”form2” method="post">
        <textarea name="wx" cols="50" rows="10"></textarea>
        <input type="submit" value="发送"/>
-    </form>    
+    </form>   
+    
+   <h5> 接收微信消息</h5> 
+    <div id="revwx"><input type="button" value="获取token" onclick="getToken()"></div>
+   <h5> 发送微信消息</h5> 
+    <div id="sendwx"></div>
   </body>
 </html>

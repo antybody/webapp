@@ -6,7 +6,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -98,7 +102,7 @@ public class wxservlet extends HttpServlet{
 		if(isEmpty(echostr)){
 			return false;
 		}
-		// �����ֵ�������
+		// 第一次连接的时候认证
 		String[] ArrTmp = { Token, timestamp, nonce };
 		Arrays.sort(ArrTmp);
 		StringBuffer sb = new StringBuffer();
@@ -150,7 +154,7 @@ public class wxservlet extends HttpServlet{
 		return echostr;
 	}
 	/**
-	 *@author haibing.xiao
+	 *@author antybody
 	 *@return  
 	 *@exception ServletException, IOException
 	 *@param
@@ -173,8 +177,6 @@ public class wxservlet extends HttpServlet{
 			}
 			String requestStr = sb.toString();
 			//String requestStr = new String(xml, "UTF-8");
-			
-			
 			try{
 				manageMessage(requestStr,request,response);
 			}catch(Exception e){
@@ -185,7 +187,7 @@ public class wxservlet extends HttpServlet{
  
 	 
 	/**
-	 * @author haibing.xiao
+	 * @author antybody
 	 * @return 
 	 * @exception ServletException, IOException
 	 * @param
@@ -199,25 +201,51 @@ public class wxservlet extends HttpServlet{
 		   
 			try {
 				 log.info("requestStr:"+requestStr);
-				 String[] requestStrs = requestStr.split("=");
-				// ReceiveXmlEntity xmlEntity = new ReceiveXmlProcess().getMsgEntity(requestStrs[1]);
+				 String str = "";
+				 String[] requestStrs = new String[]{};
+				 if(requestStr.indexOf("=") != -1){
+					 requestStrs = requestStr.split("=");
+					 str = requestStrs[1];
+				 }else
+					 str = requestStr;
+
 				 XMLSerializer xmlSerializer=new XMLSerializer();
-				 String xml = java.net.URLDecoder.decode(requestStrs[1],"UTF-8");
+				 String xml = java.net.URLDecoder.decode(str,"UTF-8");
 				 JSONObject jsonObject =(JSONObject) xmlSerializer.read(xml);
-				 //String event =jsonObject.getString("Event");
+				
 				 String msgtype =jsonObject.getString("MsgType");
+				 String event = "";
+				 String jscontent = "您在输入什么呢？";
+				 //jsonObject.put("Content", "您在输入什么呢？");
 				 if("text".equals(msgtype)){ //
-					 //String eventkey =jsonObject.getString("EventKey");
-					 //if("hytd_001".equals(eventkey)){ // hytd_001 
-						 jsonObject.put("Content", "是你在测试吗？");
-					 //}
-					
+				     jsonObject.put("Content", "您在输入："+jsonObject.getString("Content"));
+				 }
+				 
+				 if("event".equals(msgtype)){
+					 event =jsonObject.getString("Event");
+					 if("subscribe".equals(event)) 
+						 jscontent = "欢迎加入小小栈微信号";
+					 if("unsubscribe".equals(event))
+						 jscontent = "感谢加入小小栈";
+					 if("LOCATION".equals(event)){
+						
+					 }
+					 jsonObject.put("Content", jscontent);					 
+				 }
+				 if("location".equals(msgtype)){
+					 jscontent = "您在经度：" +jsonObject.getString("Location_X")+
+						     "纬度："+jsonObject.getString("Location_Y")+
+						     "中文："+jsonObject.getString("Label");
+					 jsonObject.put("Content", jscontent);	
+				 }else{
+					 jsonObject.put("Content", "您在输入什么呢？");
 				 }
 				 responseStr =creatRevertText(jsonObject);//XML
 				 log.info("responseStr:"+responseStr);
+				 response.setCharacterEncoding("UTF-8");
 				 OutputStream os =response.getOutputStream();
-				 os.write(responseStr.getBytes());
-			}   catch (Exception e) {
+				 os.write(responseStr.getBytes("UTF-8"));
+			}   catch (Exception e) { 
 				e.printStackTrace();
 			}
 			
@@ -225,8 +253,8 @@ public class wxservlet extends HttpServlet{
 	private String creatRevertText(JSONObject jsonObject){
 	    	StringBuffer revert =new StringBuffer();
 	    	revert.append("<xml>");
-	    	revert.append("<ToUserName><![CDATA["+jsonObject.get("ToUserName")+"]]></ToUserName>");
-	    	revert.append("<FromUserName><![CDATA["+jsonObject.get("FromUserName")+"]]></FromUserName>");
+	    	revert.append("<ToUserName><![CDATA["+jsonObject.get("FromUserName")+"]]></ToUserName>");
+	    	revert.append("<FromUserName><![CDATA["+jsonObject.get("ToUserName")+"]]></FromUserName>");
 	    	revert.append("<CreateTime>"+jsonObject.get("CreateTime")+"</CreateTime>");
 	    	revert.append("<MsgType><![CDATA[text]]></MsgType>");
 	    	revert.append("<Content><![CDATA["+jsonObject.get("Content")+"]]></Content>");
@@ -245,5 +273,23 @@ public class wxservlet extends HttpServlet{
 	private String trim(String str){
 		return null !=str  ? str.trim() : str;
 	}
+	
+	  /** 
+     * @param String sourceTime 待转化的时间 
+     * @param String dataFormat 日期的组织形式  "yyyy-MM-dd HH:mm:ss"
+     * @return long 当前时间的长整型格式,如 1247771400000 
+     */  
+    private static long string2long(String sourceTime,String dataFormat){  
+        long longTime = 0L;  
+        DateFormat f = new SimpleDateFormat(dataFormat);  
+        Date d = null;  
+        try {  
+            d = f.parse(sourceTime);  
+        } catch (ParseException e) {  
+            e.printStackTrace();  
+        }  
+        longTime = d.getTime();  
+        return longTime;  
+    } 
 	
 }
